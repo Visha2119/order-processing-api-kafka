@@ -8,16 +8,25 @@ import com.process.order_service.repository.OrderRepository
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import kotlin.random.Random
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/order")
 class OrderController(
     private val producer: OrderProducer, private val orderRepository: OrderRepository
 ) {
 
-    @PostMapping("/service")
+    @PostMapping
     fun placeOrder(@RequestBody request: OrderRequest): ResponseEntity<String> {
         require(request.quantity > 0) { "Quantity must be greater than 0" }
+        val order = Order(
+            orderId = Random.nextLong(1000, 9999),
+            customerId = request.customerId,
+            product = request.product,
+            quantity = request.quantity,
+            status = "RECEIVED"
+        )
+        orderRepository.save(order)
         producer.sendOrder(request)
         return ResponseEntity.ok("Order placed successfully")
     }
